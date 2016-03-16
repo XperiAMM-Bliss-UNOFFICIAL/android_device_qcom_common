@@ -47,7 +47,11 @@
 #include "performance.h"
 #include "power-common.h"
 
+#define ARRAY_SIZE(arr) (sizeof((arr)) / sizeof((arr)[0]))
+
 static int display_hint_sent;
+
+extern void interaction(int duration, int num_args, int opt_list[]);
 
 static int process_video_encode_hint(void *metadata)
 {
@@ -100,10 +104,24 @@ static int process_video_encode_hint(void *metadata)
     return HINT_NONE;
 }
 
-int power_hint_override(struct power_module *module, power_hint_t hint, void *data)
+int power_hint_override(__attribute__((unused)) struct power_module *module,
+		power_hint_t hint, void *data)
 {
     int ret_val = HINT_NONE;
+    int duration;
+    int resources_launch_boost[] = {
+        SCHED_BOOST_ON,
+        0x20D,
+    };
+
     switch(hint) {
+        case POWER_HINT_LAUNCH_BOOST:
+            duration = 2000;
+            interaction(duration, ARRAY_SIZE(resources_launch_boost),
+                    resources_launch_boost);
+
+            ret_val = HINT_HANDLED;
+            break;
         case POWER_HINT_VIDEO_ENCODE:
             ret_val = process_video_encode_hint(data);
             break;
@@ -113,7 +131,7 @@ int power_hint_override(struct power_module *module, power_hint_t hint, void *da
     return ret_val;
 }
 
-int set_interactive_override(struct power_module *module, int on)
+int set_interactive_override(__attribute__((unused)) struct power_module *module, int on)
 {
     char governor[80];
 
