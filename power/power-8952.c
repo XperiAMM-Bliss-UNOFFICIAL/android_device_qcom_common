@@ -48,8 +48,6 @@
 #include "performance.h"
 #include "power-common.h"
 
-#define ARRAY_SIZE(arr) (sizeof((arr)) / sizeof((arr)[0]))
-
 static int display_hint_sent;
 static int video_encode_hint_sent;
 static int current_power_profile = PROFILE_BALANCED;
@@ -110,7 +108,8 @@ int  power_hint_override(struct power_module *module, power_hint_t hint,
         void *data)
 {
     int duration, duration_hint;
-    unsigned long long previous_boost_time = 0, cur_boost_time;
+    static unsigned long long previous_boost_time = 0;
+    unsigned long long cur_boost_time;
     struct timeval cur_boost_timeval = {0, 0};
     double elapsed_time;
     int resources_launch_boost[] = {
